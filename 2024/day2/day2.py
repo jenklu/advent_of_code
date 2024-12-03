@@ -1,5 +1,4 @@
 import sys
-from collections import defaultdict
 
 def isSafeLine(split: str) -> tuple[bool, int]:
   dir = ""
