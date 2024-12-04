@@ -47,9 +47,18 @@ def part1(file: IOBase):
 
 
 def part2(file: IOBase):
- 
-  print(f"result: {file}")
-
+  lines = file.readlines()
+  count = 0
+  for xPos in range(1, len(lines) - 1):
+    for yPos in range(1, len(lines[0]) - 1):
+      if lines[xPos][yPos] == 'A':
+        upRt, upLf = lines[xPos+1][yPos-1], lines[xPos-1][yPos-1]
+        dwnRt, dwnLf = lines[xPos+1][yPos+1], lines[xPos-1][yPos+1]
+        upDiag = (dwnLf == 'S' and upRt == 'M') or (dwnLf == 'M' and upRt == 'S')
+        downDiag = (upLf == 'S' and dwnRt == 'M') or (upLf== 'M' and dwnRt == 'S')
+        if upDiag and downDiag:
+          count += 1
+  print(f"result: {count}")
 
 ## main
 print(sys.argv)
