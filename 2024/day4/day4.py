@@ -34,10 +34,7 @@ def part1(file: IOBase):
       centerPointForDownDiags = len(downDiags) - len(line)
       M = xPos - yPos
       downDiags[centerPointForDownDiags - M] += line[xPos]
-  print(f"rows: {rows}")
-  print(f"cols: {cols}")
-  print(f"upDiags: {upDiags}")
-  print(f"downDiags: {downDiags}")
+
   count = countXmas(rows)
   count += countXmas(cols)
   count += countXmas(upDiags)
