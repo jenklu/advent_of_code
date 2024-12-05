@@ -2,8 +2,9 @@ import sys
 from collections import defaultdict
 from io import IOBase
 from functools import cmp_to_key
+from collections.abc import Callable
 
-
+# Now unused...
 def isValidUpdate(rules: dict, update: list[str]) -> bool:
   for i in range(len(update)):
     for j in range(i):
@@ -11,26 +12,19 @@ def isValidUpdate(rules: dict, update: list[str]) -> bool:
         return False
   return True
 
-def part1(rules: dict, updates: list[list[str]]):
+def part1(comparator: Callable[[str, str], int], updates: list[list[str]]):
   result = 0
   for update in updates:
-    if isValidUpdate(rules, update):
+    if update == sorted(update, key=cmp_to_key(comparator)):
       result += int(update[len(update) // 2])
   print(f"result: {result}")
 
-def part2(rules: dict, updates: list[list[str]]):
+def part2(comparator: Callable[[str, str], int], updates: list[list[str]]):
   result = 0
-  def compareItems(item1: str, item2: str) -> int:
-    if item2 in rules[item1]:
-      return -1
-    elif item1 in rules[item2]:
-      return 1
-    return 0
   for update in updates:
-    if not isValidUpdate(rules, update):
-      update.sort(key=cmp_to_key(compareItems))
-      result += int(update[len(update) // 2])
-
+    sortedUpdate = sorted(update, key=cmp_to_key(comparator))
+    if update != sortedUpdate:
+      result += int(sortedUpdate[len(update) // 2])
   print(f"result: {result}")
 
 ## main
@@ -49,8 +43,13 @@ with open(filename, 'r') as f:
       rules[split[0]].add(split[1])
     elif line.rstrip() != "":
       updates.append(line.rstrip().split(","))
+  def compareItems(item1: str, item2: str) -> int:
+    if item2 in rules[item1]:
+      return -1
+    elif item1 in rules[item2]:
+      return 1
+    return 0
   if part == "pt1":
-    part1(rules, updates)
+    part1(compareItems, updates)
   else:
-    part2(rules, updates)
-
+    part2(compareItems, updates)
