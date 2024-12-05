@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 from io import IOBase
+from functools import cmp_to_key
 
 
 def isValidUpdate(rules: dict, update: list[str]) -> bool:
@@ -17,10 +18,20 @@ def part1(rules: dict, updates: list[list[str]]):
       result += int(update[len(update) // 2])
   print(f"result: {result}")
 
+def part2(rules: dict, updates: list[list[str]]):
+  result = 0
+  def compareItems(item1: str, item2: str) -> int:
+    if item2 in rules[item1]:
+      return -1
+    elif item1 in rules[item2]:
+      return 1
+    return 0
+  for update in updates:
+    if not isValidUpdate(rules, update):
+      update.sort(key=cmp_to_key(compareItems))
+      result += int(update[len(update) // 2])
 
-def part2(rules: list[str], updates: list[list[str]]):
-  pass
-  #print(f"result: {result}")
+  print(f"result: {result}")
 
 ## main
 print(sys.argv)
