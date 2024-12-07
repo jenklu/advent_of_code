@@ -15,7 +15,7 @@ def nextLocAndPotentialDir(current: str, x: int, y: int) -> (int, int, str):
     case _:
       raise Exception(f"Got unexpected character: {current}")
 
-def part1(mapInput: list[str]):
+def part1(mapInput: list[list[str]]) -> tuple[int, int, set[tuple[int, int]]]:
   mapWidth = len(mapInput[0])
   x, y = 0, 0
   for i in range(len(mapInput)):
@@ -29,19 +29,22 @@ def part1(mapInput: list[str]):
     break
   # count the starting point as marked, as we will count places as marked before
   # actually "moving" to the next location
-  markedCount = 1
+  startX, startY = x, y
+  marked = set()
+  marked.add((x, y))
   while True:
-    nextX, nextY, potentialDirChange = nextLocAndPotentialDir(mapInput[y][x], x, y)
+    direction = mapInput[y][x]
+    nextX, nextY, potentialDirChange = nextLocAndPotentialDir(direction, x, y)
     if not (0 <= nextX < mapWidth) or not (0 <= nextY < len(mapInput)):
-      print(f"Went off the map at ({nextX}, {nextY}). Count of x's: {markedCount}")
-      return
+      print(f"Went off the map at ({nextX}, {nextY}). Count of x's: {len(marked)}")
+      return (startX, startY, marked)
     nextChar = mapInput[nextY][nextX]
     if nextChar == "#":
       mapInput[y][x] = potentialDirChange
       continue
     
     if nextChar == ".":
-      markedCount += 1
+      marked.add((nextX, nextY))
     elif nextChar != "x":
       raise Exception(f"nextChar was {nextChar} not in '.x$'")
     mapInput[nextY][nextX] = mapInput[y][x]
@@ -83,47 +86,16 @@ def findCycle(mapInput, direction, x, y) -> bool:
       continue
     x, y = nextX, nextY
 
-def part2(mapInput: list[str]):
-  mapWidth = len(mapInput[0])
-  x, y = 0, 0
-  direction = "^"
-  for i in range(len(mapInput)):
-    for j in range(mapWidth):
-      if mapInput[i][j] in "^v<>":
-        x, y = j, i
-        direction = mapInput[i][j]
-        break
-    else:
-      continue
-    # only break if start x, y is found
-    break
-  obstacleCount = 0
+def part2(mapInput: list[list[str]]):
+  dupe = copy.deepcopy(mapInput)
+  startX, startY, potentialObstacles = part1(mapInput)
   obstacles = []
-  while True:
-    # Check exit condition
-    nextX, nextY, potentialDirChange = nextLocAndPotentialDir(direction, x, y)
-    if not (0 <= nextX < mapWidth) or not (0 <= nextY < len(mapInput)):
-      print(f"Went off the map at ({nextX}, {nextY}). Potential loop obstacles: {obstacleCount}\nObstacles: {obstacles}\nmapInput{printMapInput(mapInput)}")
-      return
-    # Mark the current location as visited by create/insert direction into a list
-    location = mapInput[y][x]
-    if isinstance(location, str):
-      mapInput[y][x] = [direction]
-    elif type(location) is list:
-      if direction not in location:
-        mapInput[y][x] += direction
-    else:
-      raise Exception(f"location unexpectedly was {location}")
-    # We hit an obstacle, turn right
-    if mapInput[nextY][nextX] == "#":
-      direction = potentialDirChange
-      continue
-    # Pretend there was an obstacle in front of us, and check if it'd turn us into a cycle
-    nextXWithObstacle, nextYWithObstacle, _ = nextLocAndPotentialDir(potentialDirChange, x, y)
-    if findCycle(copy.deepcopy(mapInput), potentialDirChange, nextXWithObstacle, nextYWithObstacle) and 0 <= nextXWithObstacle < mapWidth and 0 <= nextYWithObstacle < len(mapInput):
-      obstacles.append((nextX, nextY))
-      obstacleCount += 1
-    x, y = nextX, nextY
+  for obstacle in potentialObstacles:
+    innerDupe = copy.deepcopy(dupe)
+    innerDupe[obstacle[1]][obstacle[0]] = '#'
+    if findCycle(innerDupe, dupe[startY][startX], startX, startY):
+      obstacles.append(obstacle)
+  print(f"obstacle count: {len(obstacles)}\nobstacles: {obstacles}")
 
 ## main
 print(sys.argv)
