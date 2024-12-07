@@ -21,13 +21,28 @@ def countTotal(resultAndNums: list[tuple[int, list[Point]]], permutationGenerato
   total = 0
   for resultAndNum in resultAndNums:
     generated = permutationGenerator(resultAndNum[1])
-    print(f"goal: {resultAndNum[0]} generated: {generated}")
+    #print(f"goal: {resultAndNum[0]} generated: {generated}")
     if resultAndNum[0] in list(map(lambda x: x.total, generated)):
       total += resultAndNum[0]
   print(f"total: {total}")
 
 def part1(resultAndNums: list[tuple[int, list[Point]]]):
   countTotal(resultAndNums, generatePart1Permutations)
+
+def generatePart2Permutations(nums: list[Point]) -> list[Point]:
+  if len(nums) <= 1:
+    return nums
+  rest = generatePart2Permutations(nums[:-1])
+  perms = []
+  for val in rest:
+    perms.append(Point(nums[-1].total + val.total, f"{val.s}+{nums[-1].s}"))
+    perms.append(Point(nums[-1].total * val.total, f"{val.s}*{nums[-1].s}"))
+    concatValue = val.total * 10 ** len(str(nums[-1].total)) + nums[-1].total
+    perms.append(Point(concatValue, f"{val.s}||{nums[-1].s}"))
+  return perms
+
+def part2(mapInput: list[list[str]]):
+    countTotal(resultAndNums, generatePart2Permutations)
 
 ## main
 print(sys.argv)
