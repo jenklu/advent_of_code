@@ -35,8 +35,42 @@ def part1(mapInput: list[list[str]]) -> tuple[int, int, set[tuple[int, int]]]:
     antinodes.update(findAntinodes(antennas, nodeType, mapWidth, mapHeight))
   print(f"number of unique antinodes: {len(antinodes)}\nantinodes: {antinodes}")
 
+def findAntinodes2(antennas: list[tuple[int, int]], nodeType: str, limitX: int, limitY: int) -> set[tuple[int, int]]:
+  antinodes = set()
+  for i in range(len(antennas)):
+    for j in range(len(antennas)):
+      if i == j:
+        continue
+      a0, a1 = antennas[i], antennas[j]
+      deltaX, deltaY = a0[0] - a1[0], a0[1] - a1[1]
+      plusAntinode = (a0[0], a0[1])
+      minusAntinode = (a0[0] - deltaX, a0[1] - deltaY)
+      while True:
+        added = False
+        if 0 <= plusAntinode[0] < limitX and 0 <= plusAntinode[1] < limitY:
+          antinodes.add(plusAntinode)
+          added = True
+        if 0 <= minusAntinode[0] < limitX and 0 <= minusAntinode[1] < limitY:
+          antinodes.add(minusAntinode)
+          added = True
+        if not added:
+          break
+        plusAntinode = (plusAntinode[0] + deltaX, plusAntinode[1] + deltaY)
+        minusAntinode = (minusAntinode[0] - deltaX, minusAntinode[1] - deltaY)
+  return antinodes
+
 def part2(mapInput: list[list[str]]):
-  pass
+  antennas = defaultdict(list)
+  mapWidth, mapHeight = len(mapInput[0]), len(mapInput)
+  for y in range(mapHeight):
+    for x in range(mapWidth):
+      el = mapInput[y][x]
+      if el not in "#.":
+        antennas[el].append((x, y))
+  antinodes = set()
+  for nodeType, antennas in antennas.items():
+    antinodes.update(findAntinodes2(antennas, nodeType, mapWidth, mapHeight))
+  print(f"number of unique antinodes: {len(antinodes)}\nantinodes: {antinodes}")
 
 ## main
 print(sys.argv)
