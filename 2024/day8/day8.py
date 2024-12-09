@@ -1,19 +1,17 @@
 import sys
 import copy
 from collections import defaultdict
+from collections.abc import Callable
 
-def findAntinodes(antennas: list[tuple[int, int]], nodeType: str, limitX: int, limitY: int) -> set[tuple[int, int]]:
-  antinodes = set()
+def findAntinodesPart1(antennas: list[tuple[int, int]], limitX: int, limitY: int, antinodes: set[tuple[int, int]]) -> set[tuple[int, int]]:
   for i in range(len(antennas)):
     for j in range(len(antennas)):
       if i == j:
         continue
       a0, a1 = antennas[i], antennas[j]
       deltaX, deltaY = a0[0] - a1[0], a0[1] - a1[1]
-      # These functions come from taking the displacement between antenna0 and antenna1. To find the
-      # antinode twice as far from a0 as a1, you just add the displacement between a1 and a0 and add
-      # it to a1. The inversion of that (i.e. swapping a0 and a1) explains why we negate deltaX and
-      # deltaY for antinode0.
+      # To find antinode0 2x as far from a1 as a0, you find displacement btw a0 and a1 & add it to
+      # a0. To find antinode1, negating deltaX/deltaY => adding to a1 effectively swaps which point is a0/a1.
       antinode0 = (a0[0] + deltaX, a0[1] + deltaY)
       antinode1 = (a1[0] - deltaX, a1[1] - deltaY)
       if 0 <= antinode0[0] < limitX and 0 <= antinode0[1] < limitY:
@@ -22,21 +20,7 @@ def findAntinodes(antennas: list[tuple[int, int]], nodeType: str, limitX: int, l
         antinodes.add(antinode1)
   return antinodes
 
-def part1(mapInput: list[list[str]]) -> tuple[int, int, set[tuple[int, int]]]:
-  antennas = defaultdict(list)
-  mapWidth, mapHeight = len(mapInput[0]), len(mapInput)
-  for y in range(mapHeight):
-    for x in range(mapWidth):
-      el = mapInput[y][x]
-      if el != ".":
-        antennas[el].append((x, y))
-  antinodes = set()
-  for nodeType, antennas in antennas.items():
-    antinodes.update(findAntinodes(antennas, nodeType, mapWidth, mapHeight))
-  print(f"number of unique antinodes: {len(antinodes)}\nantinodes: {antinodes}")
-
-def findAntinodes2(antennas: list[tuple[int, int]], nodeType: str, limitX: int, limitY: int) -> set[tuple[int, int]]:
-  antinodes = set()
+def findAntinodesPart2(antennas: list[tuple[int, int]], limitX: int, limitY: int, antinodes: set[tuple[int, int]]):
   for i in range(len(antennas)):
     for j in range(len(antennas)):
       if i == j:
@@ -46,30 +30,30 @@ def findAntinodes2(antennas: list[tuple[int, int]], nodeType: str, limitX: int, 
       plusAntinode = (a0[0], a0[1])
       minusAntinode = (a0[0] - deltaX, a0[1] - deltaY)
       while True:
-        added = False
+        onMap = False
+        # Just follow the slope line positive/negative until we go off the map
         if 0 <= plusAntinode[0] < limitX and 0 <= plusAntinode[1] < limitY:
           antinodes.add(plusAntinode)
-          added = True
+          onMap = True
         if 0 <= minusAntinode[0] < limitX and 0 <= minusAntinode[1] < limitY:
           antinodes.add(minusAntinode)
-          added = True
-        if not added:
+          onMap = True
+        if not onMap:
           break
         plusAntinode = (plusAntinode[0] + deltaX, plusAntinode[1] + deltaY)
         minusAntinode = (minusAntinode[0] - deltaX, minusAntinode[1] - deltaY)
-  return antinodes
 
-def part2(mapInput: list[list[str]]):
+def handler(mapInput: list[list[str]], findAntinodes: Callable):
   antennas = defaultdict(list)
   mapWidth, mapHeight = len(mapInput[0]), len(mapInput)
   for y in range(mapHeight):
     for x in range(mapWidth):
       el = mapInput[y][x]
-      if el not in "#.":
+      if el != ".":
         antennas[el].append((x, y))
   antinodes = set()
-  for nodeType, antennas in antennas.items():
-    antinodes.update(findAntinodes2(antennas, nodeType, mapWidth, mapHeight))
+  for antennas in antennas.values():
+    findAntinodes(antennas, mapWidth, mapHeight, antinodes)
   print(f"number of unique antinodes: {len(antinodes)}\nantinodes: {antinodes}")
 
 ## main
@@ -82,6 +66,6 @@ part, filename = sys.argv[1], sys.argv[2]
 with open(filename, 'r') as f:
   mapInput = [list(line) for line in f.read().splitlines()]
   if part == "pt1":
-    part1(mapInput)
+    handler(mapInput, findAntinodesPart1)
   else:
-    part2(mapInput)
+    handler(mapInput, findAntinodesPart2)
