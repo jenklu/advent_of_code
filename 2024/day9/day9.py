@@ -2,33 +2,32 @@ import sys
 import copy
 
 def part1(fileMap: list[int]):
-  generated = []
+  checksum, checkSumIndex = 0, 0
   # If even, the last # is just free space, so go to last non-free file
   front, back = 0, len(fileMap) - (2 - len(fileMap) % 2)
   wroteFront = False
   while back > front:
     if not wroteFront:
-      generated.extend([front // 2 for x in range(fileMap[front])])
+      checksum += sum([front // 2 * i for i in range(checkSumIndex, checkSumIndex + fileMap[front])])
+      checkSumIndex += fileMap[front]
       wroteFront = True
     # If there is space in the current gap OR this is the last
     # gap, write all of the back into the gap
     if fileMap[back] < fileMap[front + 1] or (back - front) <= 2:
-      generated.extend([back // 2 for x in range(fileMap[back])])
+      checksum += sum([back // 2 * i for i in range(checkSumIndex, checkSumIndex + fileMap[back])])
+      checkSumIndex += fileMap[back]
       fileMap[front + 1] -= fileMap[back]
       back -= 2
     else:
-      generated.extend([back // 2 for x in range(fileMap[front + 1])])
+      checksum += sum([back // 2 * i for i in range(checkSumIndex, checkSumIndex + fileMap[front + 1])])
+      checkSumIndex += fileMap[front + 1]
       fileMap[back] -= fileMap[front + 1]
       front += 2
       if fileMap[back] == 0:
         back -= 2
       wroteFront = False
 
-  checksum = 0
-  for i in range(1, len(generated)):
-    checksum += i * int(generated[i])
-    #print(f"i: {i} generated[i]: {generated[i]} checksum: {checksum}")
-  print(f"checksum: {checksum}\ngenerated string[0:100]: {generated[0:100]}")
+  print(f"checksum: {checksum}")
 
 
 def part2(fileMap: list[int]):
