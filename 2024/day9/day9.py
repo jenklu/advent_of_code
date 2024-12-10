@@ -31,7 +31,35 @@ def part1(fileMap: list[int]):
 
 
 def part2(fileMap: list[int]):
-  pass
+  generated = []
+  files = []
+  spaces = []
+  for x in range(len(fileMap)):
+    if x % 2 == 0:
+      files.append((len(generated), fileMap[x]))
+      generated.extend([x // 2 for i in range(fileMap[x])])
+    else:
+      spaces.append((len(generated), fileMap[x]))
+      generated.extend(['.' for i in range(fileMap[x])])
+  for file in reversed(files):
+    for i in range(len(spaces)):
+      if spaces[i][0] > file[0]:
+        break
+      if file[1] <= spaces[i][1]:
+        fileNum = generated[file[0]]
+        for x in range(file[1]):
+          generated[spaces[i][0] + x] = fileNum
+          generated[file[0] + x] = '.'
+        spaces[i] = (spaces[i][0] + file[1], spaces[i][1] - file[1])
+        break
+
+  checksum = 0
+  for idx, val in enumerate(generated):
+    if val != '.':
+      checksum += idx * val
+  print(f"checksum: {checksum}")
+  print(generated[0:100])
+
 ## main
 print(sys.argv)
 if len(sys.argv) != 3 or sys.argv[1] not in ["pt1", "pt2"]:
