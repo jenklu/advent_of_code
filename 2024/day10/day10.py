@@ -17,15 +17,10 @@ def findEnds(startX: int, startY: int, topos: list[list[int]])->set[tuple[int, i
         reachable.update(memo[(x, y)])
   return reachable
 
-def part1(topos: list[list[int]]):
-  starts, ends = [], []
-  for y in range(len(topos)):
-    for x in range(len(topos[0])):
-      if topos[y][x] == 0:
-        starts.append((x, y))
+def part1(topos: list[list[int]], trailheads: list[tuple[int, int]]):
   score = 0
-  for trailHead in starts:
-    ends = findEnds(trailHead[0], trailHead[1], topos)
+  for trailhead in trailheads:
+    ends = findEnds(trailhead[0], trailhead[1], topos)
     score += len(ends)
   print(f"score: {score}")
 
@@ -44,15 +39,10 @@ def getScore(startX: int, startY: int, topos: list[list[int]])->int:
         score += memo[(x, y)]
   return score
 
-def part2(topos: list[list[int]]):
-  starts, ends = [], []
-  for y in range(len(topos)):
-    for x in range(len(topos[0])):
-      if topos[y][x] == 0:
-        starts.append((x, y))
+def part2(topos: list[list[int]], trailheads: list[tuple[int, int]]):
   score = 0
-  for trailHead in starts:
-    score += getScore(trailHead[0], trailHead[1], topos)
+  for trailhead in trailheads:
+    score += getScore(trailhead[0], trailhead[1], topos)
   print(f"score: {score}")
 
 ## main
@@ -66,8 +56,12 @@ with open(filename, 'r') as f:
   topoMap = []
   for line in f:
     topoMap.append([int(x) for x in line.strip()])
-  print(len(topoMap))
+  trailheads = []
+  for y in range(len(topoMap)):
+    for x in range(len(topoMap[0])):
+      if topoMap[y][x] == 0:
+        trailheads.append((x, y))
   if part == "pt1":
-    part1(topoMap)
+    part1(topoMap, trailheads)
   else:
-    part2(topoMap)
+    part2(topoMap, trailheads)
