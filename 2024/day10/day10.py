@@ -29,8 +29,31 @@ def part1(topos: list[list[int]]):
     score += len(ends)
   print(f"score: {score}")
 
+def getScore(startX: int, startY: int, topos: list[list[int]])->int:
+  curr = topos[startY][startX]
+  if curr == 9:
+    return 1
+  score = 0
+  right, left, down, up = (startX+1, startY), (startX-1, startY), (startX, startY+1), (startX, startY-1)
+  for x, y in [right, left, down, up]:
+    if 0 <= x < len(topos[0]) and 0 <= y < len(topos) and topos[y][x] == curr+1:
+      if (x, y) in memo:
+        score += memo[(x, y)]
+      else:
+        memo[(x, y)] = getScore(x, y, topos)
+        score += memo[(x, y)]
+  return score
+
 def part2(topos: list[list[int]]):
-  pass
+  starts, ends = [], []
+  for y in range(len(topos)):
+    for x in range(len(topos[0])):
+      if topos[y][x] == 0:
+        starts.append((x, y))
+  score = 0
+  for trailHead in starts:
+    score += getScore(trailHead[0], trailHead[1], topos)
+  print(f"score: {score}")
 
 ## main
 print(sys.argv)
@@ -47,4 +70,4 @@ with open(filename, 'r') as f:
   if part == "pt1":
     part1(topoMap)
   else:
-    part2(fileMap)
+    part2(topoMap)
