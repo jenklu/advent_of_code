@@ -1,35 +1,20 @@
 import sys
 import copy
+
 memo = {}
-def findEnds(x: int, y: int, topos: list[list[int]])->set[tuple[int, int]]:
-  curr = topos[y][x]
+def findEnds(startX: int, startY: int, topos: list[list[int]])->set[tuple[int, int]]:
+  curr = topos[startY][startX]
   if curr == 9:
-    return {(x, y)}
+    return {(startX, startY)}
   reachable = set()
-  if x+1 < len(topos[0]) and topos[y][x+1] == curr+1:
-    if (x+1, y) in memo:
-      reachable.update(memo[(x+1, y)])
-    else:
-      memo[(x+1, y)] = findEnds(x+1, y, topos)
-      reachable.update(memo[(x+1, y)])
-  if x-1 >= 0 and topos[y][x-1] == curr+1:
-    if (x-1, y) in memo:
-      reachable.update(memo[(x-1, y)])
-    else:
-      memo[(x-1, y)] = findEnds(x-1, y, topos)
-      reachable.update(memo[(x-1, y)])
-  if y+1 < len(topos) and topos[y+1][x] == curr+1:
-    if (x, y+1) in memo:
-      reachable.update(memo[(x, y+1)])
-    else:
-      memo[(x, y+1)] = findEnds(x, y+1, topos)
-      reachable.update(memo[(x, y+1)])
-  if y-1 >= 0 and topos[y-1][x] == curr+1:
-    if (x, y-1) in memo:
-      reachable.update(memo[(x, y-1)])
-    else:
-      memo[(x, y-1)] = findEnds(x, y-1, topos)
-      reachable.update(memo[(x, y-1)])
+  right, left, down, up = (startX+1, startY), (startX-1, startY), (startX, startY+1), (startX, startY-1)
+  for x, y in [right, left, down, up]:
+    if 0 <= x < len(topos[0]) and 0 <= y < len(topos) and topos[y][x] == curr+1:
+      if (x, y) in memo:
+        reachable.update(memo[(x, y)])
+      else:
+        memo[(x, y)] = findEnds(x, y, topos)
+        reachable.update(memo[(x, y)])
   return reachable
 
 def part1(topos: list[list[int]]):
@@ -41,7 +26,6 @@ def part1(topos: list[list[int]]):
   score = 0
   for trailHead in starts:
     ends = findEnds(trailHead[0], trailHead[1], topos)
-    print(f"trailHead {trailHead}, len(ends): {len(ends)}")
     score += len(ends)
   print(f"score: {score}")
 
