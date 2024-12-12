@@ -1,38 +1,29 @@
 import sys
 import math
-import time
 
-def handler(startStones: list[int], itersToTry, recursionDepth) -> int:
+memo = {}
+def handler(stones, itersLeft):
+  if len(stones) == 0 or itersLeft == 0:
+    return len(stones)
   stoneCount = 0
-  for startIdx, startStone in enumerate(startStones):
-    if recursionDepth == 0:
-      print(f"processing stone {startIdx} from OG list")
-    stones = [startStone]
-    for i in range(itersToTry):
-      if len(stones) > 10 ** 6:
-        itersLeft = itersToTry - i
-        print(f"splitting left at {i}, recursionDepth: {recursionDepth}, itersLeft: {itersLeft}")
-        stoneCount += handler(stones[:len(stones) // 2], itersLeft, recursionDepth+1)
-        print(f"splitting right at {i}, recursionDepth: {recursionDepth}, itersLeft: {itersLeft}")
-        stoneCount += handler(stones[len(stones) // 2:], itersLeft, recursionDepth+1)
-        break
-      nextStones = []
-      for stone in stones:
-        if stone == 0:
-          nextStones.append(1)
-        else:
-          digitCount = math.floor(math.log(stone, 10)) + 1
-          if digitCount % 2 == 0:
-            right = stone % (10 ** (digitCount // 2))
-            left = stone // (10 ** (digitCount // 2))
-            nextStones.append(left)
-            nextStones.append(right)
-          else:
-            nextStones.append(stone * 2024)
-      stones = nextStones
-    else:
-      stoneCount += len(stones)
-  return stoneCount
+  stone = stones[0]
+  if (stone, itersLeft) in memo:
+    stoneCount += memo[(stone, itersLeft)]
+  else:
+    nextStone = [1]
+    if stone != 0:
+      digitCount = math.floor(math.log(stone, 10)) + 1
+      if digitCount % 2 == 0:
+        right = stone % (10 ** (digitCount // 2))
+        left = stone // (10 ** (digitCount // 2))
+        nextStone = [left, right]
+      else:
+        nextStone = [stone * 2024]
+    for nxt in nextStone:
+      res = handler([nxt], itersLeft - 1)
+      memo[(nxt, itersLeft - 1)] = res
+      stoneCount += res
+  return stoneCount + handler(stones[1:], itersLeft)
 
 ## main
 print(sys.argv)
@@ -47,4 +38,5 @@ elif part == "pt1":
 
 with open(filename, 'r') as f:
   stones = [int(x) for x in f.read().split()]
-  print(f"stoneCount: {handler(stones, stoneIters, 0)}")
+  print(f"stoneCount: {handler(stones, stoneIters)}")
+  print(f"len(memo): {len(memo)}")
