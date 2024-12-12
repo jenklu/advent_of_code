@@ -1,18 +1,23 @@
 import sys
+import math
 
-def part1(stones: list[str], stoneIters):
+def part1(stones: list[int], stoneIters):
   for i in range(stoneIters):
     nextStones = []
     for stone in stones:
-      if stone == '0':
-        nextStones.append('1')
-      elif len(stone) % 2 == 0:
-        nextStones.append(str(int(stone[:len(stone)//2])))
-        nextStones.append(str(int(stone[len(stone)//2:])))
+      if stone == 0:
+        nextStones.append(1)
       else:
-        nextStones.append(str(int(stone) * 2024))
+        digitCount = math.floor(math.log(stone, 10)) + 1
+        if digitCount % 2 == 0:
+          right = stone % (10 ** (digitCount // 2))
+          left = stone // (10 ** (digitCount // 2))
+          nextStones.append(left)
+          nextStones.append(right)
+        else:
+          nextStones.append(stone * 2024)
     stones = nextStones
-  print(f"len(stones): {len(stones)}\nstones[:10]: {stones[:10]}")
+  print(f"len(stones): {len(stones)}\nstones[:30]: {stones[:30]}")
   
 def part2(stones: list[str]):
   pass
@@ -27,7 +32,7 @@ if len(sys.argv) == 4:
   stoneIters = int(sys.argv[3])
 
 with open(filename, 'r') as f:
-  stones = f.read().split()
+  stones = [int(x) for x in f.read().split()]
   if part == "pt1":
     part1(stones, stoneIters)
   else:
