@@ -6,55 +6,34 @@ from collections import defaultdict
 class Region:
   rows: dict[int, set[int]]
   startY: int
+  area: int
+  perim: int
 
 seen = set()
 def findRegion(farm: list[str], x: int, y: int, region: Region):
   if y < region.startY:
     region.startY = y
   region.rows[y].add(x)
+  region.area += 1
   seen.add((x, y))
   for dir in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
     nextX, nextY = x + dir[0], y + dir[1]
-    if (nextX, nextY) in seen or not (0 <= nextX < len(farm[0]) and 0 <= nextY < len(farm)):
+    if nextX in region.rows[nextY]:
       continue
-    elif farm[nextY][nextX] == farm[y][x]:
+    # if at a map border or nextX, nextY doesn't match, we need a fence between curr and next
+    if not (0 <= nextX < len(farm[0]) and 0 <= nextY < len(farm)) or farm[nextY][nextX] != farm[y][x]:
+      region.perim += 1
+    else:
       findRegion(farm, nextX, nextY, region)
-
-def processRegion(region: Region):
-  y = region.startY
-  lastRow, row, nextRow = set(), region.rows[y], region.rows[y+1]
-  area, perim = 0, 0
-  while row:
-    for val in row:
-      area += 1
-      if (val - 1) not in row:
-        # fence to the left
-        perim += 1
-      if (val + 1) not in row:
-        # fence to the left
-        perim += 1
-      if val not in lastRow:
-        # fence on top
-        perim += 1
-      if val not in nextRow:
-        # fence on bottom
-        perim += 1
-    # set up next iteration
-    lastRow = row
-    y += 1
-    row, nextRow = region.rows[y], region.rows[y+1]
-  return area, perim
-
 
 def part1(farm: list[str]):
   price = 0
   for y in range(len(farm)):
     for x in range(len(farm[0])):
       if (x, y) not in seen:
-        region = Region(defaultdict(set), y)
+        region = Region(defaultdict(set), y, 0, 0)
         findRegion(farm, x, y, region)
-        area, perim = processRegion(region)
-        price += area * perim
+        price += region.area * region.perim
   print(f"total price: {price}")
 
 def part2(farm: list[str]):
