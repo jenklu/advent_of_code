@@ -7,30 +7,12 @@ import math
 class Coord:
   x: int
   y: int
-  cost: int
+
 @dataclass
 class Machine:
   prize: Coord
   cost3: Coord
   cost1: Coord
-
-def findMachineCost(m: Machine) -> int:
-  cheaps = [Coord(m.prize.x - (m.cost1.x * i), m.prize.y - (m.cost1.y * i), i) for i in range(1, 101)]
-  priceys =  [Coord(m.cost3.x*i, m.cost3.y*i, 3*i) for i in range(1, 101)]
-  minCost = 0
-  for cheap in cheaps:
-    if (cheap.x, cheap.y) == (0, 0) and (minCost == 0 or cheap.cost < minCost):
-      minCost = cheap.cost
-      continue
-    elif cheap.x < 0 or cheap.y < 0:
-      continue
-    for pricey in priceys:
-      cost = cheap.cost + pricey.cost
-      if (pricey.x, pricey.y) == (cheap.x, cheap.y) and (minCost == 0 or cost < minCost):
-        minCost = cost
-      elif (pricey.x, pricey.y) == (m.prize.x, m.prize.y) and (minCost == 0 or pricey.cost < minCost):
-        minCost = pricey.cost
-  return minCost
 
 # A system of equations is defined by (for x and y): machine.prize = machine.cost1 + machine.cost3
 # If the direction of movement for cost1 and cost3 are the same (i.e equivalent slopes), then (if
@@ -52,9 +34,7 @@ def findSolution(m: Machine) -> int:
   cost1presses, cost3presses = round(cost1presses), round(cost3presses)
   if not (cost3presses * m.cost3.x + cost1presses * m.cost1.x == m.prize.x and
           cost3presses * m.cost3.y + cost1presses * m.cost1.y == m.prize.y):
-    print("not integer solution")
     return 0
-  print(f"solution for machine {m}:\n\t{int(cost1presses)} cost1presses and {int(cost3presses)} cost3presses")
   return cost1presses + 3 * cost3presses
 
 ## main
@@ -71,15 +51,11 @@ with open(filename, 'r') as f:
     buttonRe = r"(?<=\+)[0-9]*"
     cost3raw, cost1raw = re.findall(buttonRe, lines[i]), re.findall(buttonRe, lines[i+1])
     prizeRaw = re.findall(r"(?<=\=)[0-9]*", lines[i+2])
-    prize = Coord(int(prizeRaw[0]), int(prizeRaw[1]), 0)
+    prize = Coord(int(prizeRaw[0]), int(prizeRaw[1]))
     if part == "pt2":
       prize.x, prize.y = prize.x + 10000000000000, prize.y + 10000000000000
-    machine = Machine(prize,
-      Coord(int(cost3raw[0]), int(cost3raw[1]), 0),
-      Coord(int(cost1raw[0]), int(cost1raw[1]), 0),
-    )
-    # solution, cost = findSolution(machine), findMachineCost(machine)
-    # if solution != cost:
-    #   print(f"line {i}: solution {solution} != cost {cost}")
-    totalCost += findSolution(machine)
+    totalCost += findSolution(Machine(prize,
+      Coord(int(cost3raw[0]), int(cost3raw[1])),
+      Coord(int(cost1raw[0]), int(cost1raw[1])),
+    ))
   print(f"totalCost: {totalCost}")
