@@ -26,12 +26,31 @@ def part1(bots: list[tuple[Coord, Coord]], maxX: int, maxY: int):
     count *= quadCount
   print(f"count: {count}")
 def part2(bots: list[tuple[Coord, Coord]], maxX: int, maxY: int):
-  pass
+  second = 0
+  while second < 10000:
+    botMap = defaultdict(lambda: '.')
+    for bot in bots:
+      if botMap[(bot[0].x, bot[0].y)] == '.':
+        botMap[(bot[0].x, bot[0].y)] = 1
+      else:
+        botMap[(bot[0].x, bot[0].y)] += 1
+    maxRunLen = 0
+    s = ""
+    for row in range(maxY):
+      rowStr = "".join([str(botMap[(col, row)]) for col in range(maxX)])
+      s += rowStr + "\n"
+      splitCounts = [len(x) for x in rowStr.split('.')]
+      maxRunLen = max(maxRunLen, max(splitCounts))
+    if (second % 100) == 0:
+      print(f"second: {second}")
+    if maxRunLen >= 10: 
+      print(f"candidate: {second}\n{s}")
+    second, bots = second + 1, [(Coord((bot[0].x + bot[1].x) % maxX, (bot[0].y + bot[1].y) % maxY), Coord(bot[1].x, bot[1].y)) for bot in bots]
 
 ## main
 print(sys.argv)
 if len(sys.argv) != 4 or sys.argv[1] not in ["pt1", "pt2"]:
-    print(f"Usage: {sys.argv[0]} (pt1|pt2) <input file path>")
+    print(f"Usage: {sys.argv[0]} (pt1|pt2) <input file path> maxX,maxY")
     exit(0)
 part, filename = sys.argv[1], sys.argv[2]
 maxes = sys.argv[3].split(',')
@@ -49,4 +68,3 @@ with open(filename, 'r') as f:
     part1(bots, maxX, maxY)
   else:
     part2(bots, maxX, maxY)
-   
