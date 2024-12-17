@@ -11,7 +11,7 @@ class Coord:
 
 def part1(bots: list[tuple[Coord, Coord]], maxX: int, maxY: int):
   endPos = defaultdict(lambda: 0)
-  for bot in boys:
+  for bot in bots:
     endX, endY = (bot[0].x + 100 * bot[1].x) % maxX, (bot[0].y + 100 * bot[1].y) % maxY
     endPos[(endX, endY)] += 1
   quadLenX, quadLenY = maxX // 2, maxY // 2
