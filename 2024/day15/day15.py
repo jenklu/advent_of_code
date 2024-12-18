@@ -1,11 +1,9 @@
-from collections import defaultdict
-import copy
 import sys
 
+DIR_MAP = {'<': (-1, 0), '>': (1, 0), 'v': (0, 1), '^': (0, -1)}
 def part1(plot: list[list[str]], seq: str, bot: tuple[int, int]):
-  nextMap = {'<': (-1, 0), '>': (1, 0), 'v': (0, 1), '^': (0, -1)}
   for s in seq:
-    deltaX, deltaY = nextMap[s][0], nextMap[s][1]
+    deltaX, deltaY = DIR_MAP[s][0], DIR_MAP[s][1]
     nextX, nextY = bot[0] + deltaX, bot[1] + deltaY
     nextNextX, nextNextY = nextX, nextY
     # while to handle multiple boxes next to each other
@@ -18,16 +16,14 @@ def part1(plot: list[list[str]], seq: str, bot: tuple[int, int]):
       plot[nextNextY][nextNextX] = 'O'
     plot[bot[1]][bot[0]] = '.'
     plot[nextY][nextX], bot = '@', (nextX, nextY)
-  print("finalplot")
-  print("\n".join(["".join(row) for row in plot]))
-  sum = 0
+  print("finalplot\n" + "\n".join(["".join(row) for row in plot]))
+  total = 0
   for y in range(len(plot)):
     for x in range(len(plot[0])):
       if plot[y][x] == 'O':
-        sum += x + 100*y
-  print(f"sum: {sum}")
+        total += x + 100*y
+  print(f"total: {total}")
 
-verticalBoxDir = {'[': 1, ']': -1}
 def findVerticalBoxUpdates(plot: list[list[str]], startX: int, y: int, delta: int) -> list[tuple[int, int, str]]:
   updates = {}
   candidates = {startX}
@@ -36,10 +32,11 @@ def findVerticalBoxUpdates(plot: list[list[str]], startX: int, y: int, delta: in
     for x in candidates:
       if plot[y][x] == '#':
         return None
+      # either we already handled this X or it's not a box
       if x in nextCandidates or plot[y][x] not in '[]':
         continue
       # Create the updates for the current box
-      otherX = x + verticalBoxDir[plot[y][x]]
+      otherX = x + (1 if plot[y][x] == '[' else -1)
       updates[(x, y+delta)] = plot[y][x]
       updates[(otherX, y+delta)] = plot[y][otherX]
       # no box is taking this box's places, so fill in with a '.'
@@ -59,11 +56,9 @@ def findHorizontalBoxUpdates(plot: list[list[str]], x: int, y: int, delta: int) 
   return [(i, y, plot[y][i-delta]) for i in range(x, endX+delta, delta)]
                            
 def part2(plot: list[list[str]], seq: str, bot: tuple[int, int]):
-  nextMap = {'<': (-1, 0), '>': (1, 0), 'v': (0, 1), '^': (0, -1)}
+  DIR_MAP = {'<': (-1, 0), '>': (1, 0), 'v': (0, 1), '^': (0, -1)}
   for s in seq:
-    #print("\n".join(["".join(row) for row in plot]))
-    prevBoxCount, prevPlot = sum([row.count(']') for row in plot]), copy.deepcopy(plot)
-    deltaX, deltaY = nextMap[s][0], nextMap[s][1]
+    deltaX, deltaY = DIR_MAP[s][0], DIR_MAP[s][1]
     nextX, nextY = bot[0] + deltaX, bot[1] + deltaY
     if plot[nextY][nextX] == '#':
       continue
@@ -81,14 +76,8 @@ def part2(plot: list[list[str]], seq: str, bot: tuple[int, int]):
     # move the bot
     plot[bot[1]][bot[0]] = '.'
     plot[nextY][nextX], bot = '@', (nextX, nextY)
-    boxCount = sum([row.count(']') for row in plot])
-    if boxCount != prevBoxCount:
-      print(f"{s}: prevCount: {prevBoxCount} boxCount: {boxCount} bot: {bot}\n")
-      print("\n".join(["".join(row) for row in prevPlot]))
-      print("\n".join(["".join(row) for row in plot]))
 
-  print("finalplot")
-  print("\n".join(["".join(row) for row in plot]))
+  print("finalplot\n" + "\n".join(["".join(row) for row in plot]))
   total = 0
   for y in range(len(plot)):
     for x in range(len(plot[0])):
@@ -104,24 +93,16 @@ if len(sys.argv) != 3 or sys.argv[1] not in ["pt1", "pt2"]:
 part, filename = sys.argv[1], sys.argv[2]
 
 with open(filename, 'r') as f:
-  plot, seq, bot = [], "", (0, 0)
-  if part == "pt1":
-    for y, line in enumerate(f):
-      if line[0] == '#':
-        botX = line.find('@')
-        if botX != -1:
-          bot = (botX, y)
-        plot.append(list(line.rstrip()))
-      else:
-        seq += line.rstrip()
-    part1(plot, seq, bot)
-    sys.exit(0)
-  # part2
+  plot, seq, bot, isPart1 = [], "", (-1, 0), part == "pt1"
   for y, line in enumerate(f):
     if line[0] in "<>^v":
       seq += line.rstrip()
       continue
     if line == "\n":
+      continue
+    if isPart1:
+      bot = (line.find("@"), y) if bot[0] == -1 else bot
+      plot.append(list(line.rstrip()))
       continue
     plot.append([])
     for x, c in enumerate(line):
@@ -132,4 +113,4 @@ with open(filename, 'r') as f:
         plot[-1].extend(['[', ']'])
       elif c != "\n":
         plot[-1].extend([c, c])
-part2(plot, seq, bot)
+  part1(plot, seq, bot) if isPart1 else part2(plot, seq, bot)
