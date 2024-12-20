@@ -25,11 +25,21 @@ def part1(regs: list[int], cmds: str):
       ip = cmds[ip+1]
     else:
       ip += 2
-  print(",".join([str(s) for s in out]))
+  return out
 
-def part2():
-  pass
-
+def part2(regs: list[int], cmds: str):
+  #i = 1
+  #while True:
+  for i in [2 ** x for x in range(50)]:
+    regs[0] = i
+    p1 = part1(regs, cmds)
+    if p1 == cmds:
+      print(f"Found the correct A register: {i}")
+      return
+    #if i % 100000 == 0:
+    print(f"checked {i} - len(p1): {len(p1)}")
+    i += 1
+  print(f"len(cmds): {len(cmds)}")
 ## main
 print(sys.argv)
 if len(sys.argv) != 3 or sys.argv[1] not in ["pt1", "pt2"]:
@@ -41,4 +51,4 @@ with open(filename, 'r') as f:
   lines = f.read().splitlines()
   regs = [int(lines[i].split(':')[1]) for i in range(3)]
   cmds = [int(x) for x in lines[4].split(':')[1] if x.isdigit()]
-  part1(regs, cmds) if part == "pt1" else part2(plot)
+  part1(regs, cmds) if part == "pt1" else part2(regs, cmds)
