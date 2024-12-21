@@ -1,0 +1,22 @@
+5,4
+4,2
+4,5
+3,0
+2,1
+6,3
+2,4
+1,5
+0,6
+3,3
+2,6
+5,1
+def printVisited(visited, gridSize):
+  for y in range(gridSize+1):
+    s = ""
+    for x in range(gridSize+1):
+      if Coord(x, y) not in visited:
+        s += "#   "
+        continue
+      d = visited[Coord(x, y)]
+      s += str(d) + ' ' * (4 - len(str(d)))
+    print(s)
