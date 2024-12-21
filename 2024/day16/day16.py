@@ -35,8 +35,6 @@ def part1(plot: list[list[str]]) -> tuple[dict[tuple[int, int, tuple[int, int]],
 
     del candidates[(x, y, change)]
     visited[(x, y, change)] = score
-    # if x == endX and y == endY:
-    #   continue
     for X, Y, Dir, Score in genCandidates(plot, x, y, change, score):
       if (X, Y, Dir) not in visited and candidates[(X, Y, Dir)] > Score:
         candidates[(X, Y, Dir)] = Score
