@@ -18,7 +18,6 @@ def part1(regs: list[int], cmds: str):
       case 4:
         regs[1] = regs[1] ^ regs[2]
       case 5:
-        print(f"b: {regs[1]} - oldA: {oldA} - b % 8: {regs[1] % 8}")
         out.append(combo(cmds[ip+1], regs) % 8)
       case 6:
         regs[1] = regs[0] // 2 ** combo(cmds[ip+1], regs)
@@ -29,21 +28,36 @@ def part1(regs: list[int], cmds: str):
       oldA = regs[0]
     else:
       ip += 2
+  print(out)
   return out
 
-def part2naive(regs: list[int], cmds: str):
-  #i = 1
-  #while True:
-  for i in [2 ** x for x in range(50)]:
-    regs[0] = i
-    p1 = part1(regs, cmds)
-    if p1 == cmds:
-      print(f"Found the correct A register: {i}")
-      return
-    #if i % 100000 == 0:
-    print(f"checked {i} - len(p1): {len(p1)}")
-    i += 1
-  print(f"len(cmds): {len(cmds)}")
+def generateA(cmds, currA, depth)->int:
+  expectedB, candidates = cmds[-1], []
+  # The correctness of the previous iteration depends on the condition nextA // 8 == prevA, so we
+  # only need to consider a in [prevA*8,prevA*8+7]. Values of a > prevA*8+7 invalidate the nextA //
+  # 8 == prevA condition. This condition is essential for backtracking, but was tricky to figure out
+  for a in [currA + i for i in range(0, 8)]:
+    b = a % 8
+    b = b ^ 5
+    c = a // (2 ** b)
+    b = b ^ 6
+    b = b ^ c
+    # b is a pure function of a, so if b % 8 == expectedB, consider this a for the next round.
+    if b % 8 == int(expectedB):
+      # If there's only one `b` left to print, then the first candidate is the lowest, so return it
+      if len(cmds) == 1:
+        return a
+      candidates.append(a)
+  # I originally tried to find a solution here without the `nextA // 8 == prevA` condition, and
+  # just kept incrementing a at every backtracking iteration to find the next iteration's a. But
+  # this can cause the next iterations `a` to not satisfy the above condition.
+  for candidate in candidates:
+    nextA = candidate * 8
+    res = generateA(cmds[:-1], nextA, depth+1)
+    if res != -1:
+      return res
+  return -1
+
 '''
 This is the program represented by `input.txt`
 B = A % 8
@@ -55,32 +69,14 @@ B = B ^ C
 PRINT(B % 8)
 GOTO(1) IF A != 0
 
-This is how I derived B in terms of A
+This is how I derived B in terms of A (wasted time, not used)
 B1 = (A % 8) ^ 5
 C = A // (2 ** B1) = A // (2 ** (A % 8) ^ 5)
 B2 = (A % 8) ^ 5 ^ 6 = (A % 8) ^ 3
 B3 = B2 ^ C = ((A % 8) ^ 3) ^ (A // (2 ** (A % 8) ^ 5)
 '''
 def part2(regs: list[int], cmds: str):
-  # We know a is 0 at the very end. The step before that, it must have been somewhere btw 1-7
-  # But at each step, b is a function of a as described above. So start
-  a = 0
-  for i, expectedB in enumerate(reversed(cmds)):
-    testA = 1
-    while True:
-      b = testA % 8
-      b = b ^ 5
-      c = testA // (2 ** b)
-      b = b ^ 6
-      b = b ^ c
-      if b % 8 == int(expectedB):
-        print(f"{b % 8}:found testA {testA} - b: {b}")
-        break
-      testA += 1
-    if expectedB == 2:
-      break
-    a += testA << (i * 3) 
-
+  a = generateA(cmds, 0, 0)
   regs[0] = a
   print(f"Found a: {a}")
   print(f"part1: {part1(regs, cmds)}")
