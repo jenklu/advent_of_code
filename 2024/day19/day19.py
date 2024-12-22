@@ -20,8 +20,23 @@ def part1(towels: list[str], patterns: list[str]):
   score = sum([1 for pattern in patterns if canMake(towels, pattern, "")])
   print(f"score: {score}")
 
+def countOptions(towels, pattern) -> int:
+  if pattern in memo:
+    return memo[pattern]
+  total = 0
+  for towel in towels:
+    l = len(towel)
+    if towel == pattern:
+      total += 1
+    elif towel == pattern[:l]:
+      memo[pattern[l:]] = countOptions(towels, pattern[l:])
+      total += memo[pattern[l:]]
+  memo[pattern] = total
+  return total
+
 def part2(towels: list[str], patterns: list[str]):
-  pass
+  score = sum([countOptions(towels, pattern) for pattern in patterns])
+  print(f"score: {score}")
 
 ## main
 print(sys.argv)
