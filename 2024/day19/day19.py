@@ -10,7 +10,6 @@ def canMake(towels, pattern, seen):
     l = len(towel)
     tempSeen = seen + pattern[:l]
     if towel == pattern[:l]:
-      memo[tempSeen] = True
       if canMake(towels, pattern[l:], tempSeen):
         return True
       memo[pattern[l:]] = False
