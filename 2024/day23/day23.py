@@ -1,23 +1,20 @@
 import sys
 from collections import defaultdict
-def part1(connections: list[int]):
-  edges = defaultdict(list)
+from copy import copy
+
+def part1(connections: list[str]):
+  edges = defaultdict(set)
   for connection in connections:
-    edges[connection[0]].append(connection[1])
-    edges[connection[1]].append(connection[0])
+    edges[connection[0]].add(connection[1])
+    edges[connection[1]].add(connection[0])
   triples = set()
   for connection in connections:
     for other in edges[connection[0]]:
       if other != connection[1] and other in edges[connection[1]]:
-        triples.add(tuple(sorted((other, connection[0], connection[1]))))
-  count = 0
-  for triple in triples:
-    for item in triple:
-      if item[0] == "t":
-        count += 1
-        break
-  print(f"count: {count}")
-    
+        for s in (other, connection[0], connection[1]):
+          if s[0] == 't':
+            triples.add(tuple(sorted((other, connection[0], connection[1]))))
+  print(f"count: {len(triples)}")
 def part2(connections):
   pass
 
