@@ -1,10 +1,10 @@
 import sys
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from math import inf
-from copy import copy
+
 Coord = namedtuple("Coord", ['x', 'y'])
 
-def findMinPath(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int)->dict[Coord, int]:
+def findDistances(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int)->dict[Coord, int]:
   cands = {start}
   visited, depth = {}, 0
   while cands:
@@ -19,19 +19,35 @@ def findMinPath(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY
     cands, depth = nextCands, depth+1 
   return visited
 
-def part1(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int):
-  total, baseline = 0, findMinPath(obstacles, start, end, maxX, maxY)[end]
-  for counter, obstacle in enumerate(obstacles):
-    testSet = copy(obstacles)
-    testSet.remove(obstacle)
-    res = findMinPath(testSet, start, end, maxX, maxY)[end]
-    if baseline - res >= 100:
-      total += 1
-    if counter % 100 == 0:
-      print(f"{100 * counter / len(obstacles)}% done")
-  print(f"total: {total}")
+def findCheats(obstacles: set[Coord], toCheck: dict[Coord, int], curr: Coord, dist: int, maxDist: int):
+  toCheck[curr] = dist
+  if dist >= maxDist:
+    return
+  for nxt in [Coord(curr.x+1, curr.y), Coord(curr.x-1, curr.y), Coord(curr.x, curr.y+1), Coord(curr.x, curr.y-1)]:
+    if not toCheck.get(nxt, inf) > dist + 1:
+      continue
+    findCheats(obstacles, toCheck, nxt, dist + 1, maxDist)
 
-def plot(obstacles: set[Coord], visited: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int):
+def handler(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int, maxDist: int):
+  visited = findDistances(obstacles, end, start, maxX, maxY)
+  #printPlot(obstacles, visited, start, end, maxX, maxY)
+  count = 0
+  for i, (point, score) in enumerate(visited.items()):
+    if score < 100:
+      continue
+    cheatsToCheck = {}
+    findCheats(obstacles, cheatsToCheck, point, 0, maxDist)
+    for cheatLoc, cheatDist in cheatsToCheck.items():
+      if not cheatLoc in visited:
+        continue
+      improvement = score - (visited[cheatLoc] + cheatDist)
+      if improvement >= 100:
+        count += 1
+    if i % 1000 == 0:
+      print(f"processed {100 * i / len(visited)}%")
+  print(f"count: {count}")
+
+def printPlot(obstacles: set[Coord], visited: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int):
   for y in range(maxY+1):
     s = ""
     for x in range(maxX+1):
@@ -50,47 +66,6 @@ def plot(obstacles: set[Coord], visited: set[Coord], start: Coord, end: Coord, m
       s = "#" * (maxX + 1) * 3
     print(s)
 
-def findCheats(obstacles: set[Coord], scores: dict[Coord, int], toCheck: dict[Coord, int], curr: Coord, dist: int):
-  toCheck[curr] = dist
-  for nxt in [Coord(curr.x+1, curr.y), Coord(curr.x-1, curr.y), Coord(curr.x, curr.y+1), Coord(curr.x, curr.y-1)]:
-    if not toCheck.get(nxt, inf) > dist + 1:
-      continue
-    if dist <= 19:
-      findCheats(obstacles, scores, toCheck, nxt, dist + 1)
-    # elif nxt in scores:
-      # toCheck[nxt] = dist + 1
-    # if nxt in obstacles and dist < 19 and nxt not in obstSeen:
-    #   obstSeen.add(nxt)
-    #   findCheats(obstacles, scores, obstSeen, toCheck, nxt, dist+1)
-    #   # for cheat, dist in cheats.items():
-    #   #   if toCheck.get(cheat, inf) > dist + 1:
-    #   #     toCheck[cheat] = dist + 1
-    # elif nxt in scores and toCheck.get(nxt, inf) > dist + 1:
-    #   toCheck[nxt] = dist + 1
-
-def part2(obstacles: set[Coord], start: Coord, end: Coord, maxX: int, maxY: int):
-  visited = findMinPath(obstacles, end, start, maxX, maxY)
-  plot(obstacles, visited, start, end, maxX, maxY)
-  #cheatMap = defaultdict(lambda: 0)
-  count = 0
-  for i, (point, score) in enumerate(visited.items()):
-    if score < 100:
-      continue
-    cheatsToCheck = {}
-    findCheats(obstacles, visited, cheatsToCheck, point, 0)
-    for cheatLoc, cheatDist in cheatsToCheck.items():
-      if not cheatLoc in visited:
-        continue
-      improvement = score - (visited[cheatLoc] + cheatDist)
-      if improvement >= 100:
-        #cheatMap[improvement] += 1
-        count += 1
-    if i % 50 == 0:
-      print(f"processed {100 * i / len(visited)}%")
-  print(f"count: {count}")
-  # for improvement in sorted(cheatMap):
-  #   print(f"- There are {cheatMap[improvement]} cheats that save {improvement}")
-        
 ## main
 print(sys.argv)
 if len(sys.argv) not in [3, 4] or sys.argv[1] not in ["pt1", "pt2"]:
@@ -114,4 +89,7 @@ with open(filename, 'r') as f:
         start = Coord(x, y)
       elif line[x] == 'E':
         end = Coord(x, y)
-  part1(obstacles, start, end, maxX, maxY) if part == "pt1" else part2(obstacles, start, end, maxX, maxY)
+  if part == "pt1":
+    handler(obstacles, start, end, maxX, maxY, 2)
+  else:
+    handler(obstacles, start, end, maxX, maxY, 20)
