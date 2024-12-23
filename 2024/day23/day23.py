@@ -21,7 +21,7 @@ def findLargestSet(start: str, seen: set[str], edges: dict[str, set[str]]):
   if start in memo:
     return memo[start]
   maxSet = seen
-  for node in edges[start]:
+  for node in sorted(edges[start]):
     if node not in seen and seen.issubset(edges[node]):
       seenCopy = copy(seen)
       seenCopy.add(node)
