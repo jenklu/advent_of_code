@@ -9,6 +9,7 @@ DIR_MAP = {UP: "^", DOWN: "v", LEFT: "<", RIGHT: ">"}
 
 def dist(first: Coord, second: Coord):
   return abs(first.x - second.x) + abs(first.y - second.y)
+
 def findPaths(curr: Coord, locs: list[Coord], path: str, plot: set[Coord]):
   if not locs:
     return [path]
@@ -23,48 +24,35 @@ def findPaths(curr: Coord, locs: list[Coord], path: str, plot: set[Coord]):
       paths.extend(findPaths(nxt, locs, path+DIR_MAP[direction], plot))
   return paths
 
-def codeToCoords(code: str)->list[Coord]:
-  res = []
-  for c in code:
-    if c == '0':
-      res.append(Coord(1, 3))
-      continue
-    elif c == 'A':
-      res.append(Coord(2, 3))
-      continue
-    c = int(c) - 1 # -1 to zero index
-    x = c % 3
-    y = 2 - c // 3 # invert to start from the top
-    res.append(Coord(x, y))
-  return res
-NUMPAD = set(codeToCoords("0123456789A"))
+def codeToCoord(c: str)->Coord:
+  if c == '0':
+    return Coord(1, 3)
+  elif c == 'A':
+    return Coord(2, 3)
+  c = int(c) - 1 # -1 to zero index
+  x = c % 3
+  y = 2 - c // 3 # invert to start from the top
+  return Coord(x, y)
+NUMPAD = set([codeToCoord(c) for c in "0123456789A"])
 
-def pathToCoords(code: str)->list[Coord]:
-  res = []
-  for c in code:
-    match c:
-      case "^":
-        res.append(Coord(1, 0))
-      case "A":
-        res.append(Coord(2, 0))
-      case "<":
-        res.append(Coord(0, 1))
-      case "v":
-        res.append(Coord(1, 1))
-      case ">":
-        res.append(Coord(2, 1))
-  return res
-DIRPAD = set(pathToCoords("v^<>A"))
+DIRPAD_MAP = {
+  "^": Coord(1, 0),
+  "A": Coord(2, 0),
+  "<": Coord(0, 1),
+  "v": Coord(1, 1),
+  ">": Coord(2, 1),
+}
+DIRPAD = set([DIRPAD_MAP[c] for c in "v^<>A"])
 
 def part1(codes: list[str]):
   total = 0
   for code in codes:
-    coords = codeToCoords(code)
+    coords = [codeToCoord(c) for c in code]
     minPath = inf
     for path in findPaths(Coord(2, 3), coords, "", NUMPAD):
-      path1Coords = pathToCoords(path)
+      path1Coords = [DIRPAD_MAP[c] for c in path]
       for secondPath in findPaths(Coord(2, 0), path1Coords, "", DIRPAD):
-        path2Coords = pathToCoords(secondPath)
+        path2Coords = [DIRPAD_MAP[c] for c in secondPath]
         minFound = min(findPaths(Coord(2, 0), path2Coords, "", DIRPAD), key=len)
         minPath = min(len(minFound), minPath)
     codeScore = minPath * int(code[:3])
