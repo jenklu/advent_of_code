@@ -15,14 +15,14 @@ def findPaths(curr: Coord, locs: list[Coord], path: str, plot: set[Coord], minPa
     return []
   if not locs:
     return [path]
-  end = locs[0]
-  if curr == end:
+  nextStop = locs[0]
+  if curr == nextStop:
     return findPaths(curr, locs[1:], path + "A", plot)
   paths = []
   for direction in [UP, DOWN, LEFT, RIGHT]:
     nextX, nextY = curr.x + direction[0], curr.y + direction[1]
     nxt = Coord(nextX, nextY)
-    if nxt in plot and dist(nxt, end) < dist(curr, end):
+    if nxt in plot and dist(nxt, nextStop) < dist(curr, nextStop):
       paths.extend(findPaths(nxt, locs, path+DIR_MAP[direction], plot))
   return paths
 
@@ -45,7 +45,6 @@ DIRPAD_MAP = {
   ">": Coord(2, 1),
 }
 DIRPAD = set([DIRPAD_MAP[c] for c in "v^<>A"])
-
 def part1(codes: list[str]):
   total = 0
   for code in codes:
@@ -62,46 +61,93 @@ def part1(codes: list[str]):
     total += codeScore
   print(f"total: {total}")
 
-def pathScore(path: str):
-  score = 0
-  # All paths end in "A", so the robot is always at "A" at the beginning of a path. So to calculate
-  # the true score for a path, we add a prefix of "A" to the path
-  path = 'A' + path
-  for i, c in enumerate(path[1:]):
-    score += dist(DIRPAD_MAP[c], DIRPAD_MAP[path[i-1]]) + 1
-  return score
 
-def getNextPathsToCheck(paths: list[list[Coord]]):
-  # minScore, nextPaths = inf, set()
-  # for path in paths:
-  #   score = pathScore(path)
-  #   if score == minScore:
-  #     coords = [DIRPAD_MAP[c] for c in path]
-  #     nextPaths.update(findPaths(DIRPAD_MAP["A"], coords, "", DIRPAD, minScore))
-  #   elif score < minScore:
-  #     minScore = score
-  #     coords = [DIRPAD_MAP[c] for c in path]
-  #     nextPaths = set(findPaths(DIRPAD_MAP["A"], coords, "", DIRPAD, minScore))
-  # return nextPaths
-  nextPaths = []
+def findPaths2(curr: Coord, end: Coord, path: str, plot: set[Coord])->list[str]:
+  if curr == end:
+    return [path + "A"]
+  paths = []
+  for direction in [UP, DOWN, LEFT, RIGHT]:
+    nextX, nextY = curr.x + direction[0], curr.y + direction[1]
+    nxt = Coord(nextX, nextY)
+    if nxt in plot and dist(nxt, end) < dist(curr, end):
+      paths.extend(findPaths2(nxt, end, path+DIR_MAP[direction], plot))
+  return paths
+
+memo = {}
+def findComponentPath(c1, c2, itersLeft)->(int, str):
+  # if c1 == c2:
+  #   return 1, 'A'
+  if (c1+c2, itersLeft) in memo:
+    return memo[(c1+c2, itersLeft)]
+  paths = findPaths2(DIRPAD_MAP[c1], DIRPAD_MAP[c2], "", DIRPAD)
+  if itersLeft == 0:
+    memo[(c1+c2, 0)] = (len(paths[0]), paths[0])
+    return memo[(c1+c2, 0)]
+  minPath = "a"*999999
   for path in paths:
-    pathCoords = [DIRPAD_MAP[c] for c in path]
-    nextPaths.extend(findPaths(DIRPAD_MAP["A"], pathCoords, "", DIRPAD))
-  return nextPaths
+    score, resPath = 0, ""
+    for i in range(0, len(path) - 1):
+      res = findComponentPath(path[i], path[i+1], itersLeft-1)
+      score += res[0]
+      resPath += res[1]
+    if len(resPath) <= len(minPath):
+      minScore, minPath = score, resPath
+  memo[(c1 + c2, itersLeft)] = (minScore, minPath)
+  return (minScore, minPath)
 
 def part2(codes: list[str]):
+  NUM_DIRPADS = 1
   total = 0
   for code in codes:
     coordsList = [codeToCoord(c) for c in code]
     paths = findPaths(codeToCoord("A"), coordsList, "", NUMPAD)
-    for i in range(25):
-      print(f"code: {code} i: {i} len(paths): {len(paths)}")
-      paths = getNextPathsToCheck(paths)
-    minPath = min(paths, key=len) 
+    minScore, minPath = inf, "a"*999999
+    for path in paths:
+      score = 0
+      path = "A" + path
+      resPath = ""
+      for i in range(len(path)-1):
+        componentScore, componentPath = findComponentPath(path[i], path[i+1], NUM_DIRPADS)
+        resPath += componentPath
+      if len(resPath) < len(minPath):
+        minScore, minPath = score, resPath
     codeScore = len(minPath) * int(code[:3])
-    print(f"code ({code}) *  len(minPath) ({len(minPath)}) = score ({codeScore})")
     total += codeScore
-  print(f"total: {total}")
+    print(f"code {code}: minScore: {len(minPath)} = score ({codeScore}) - minPath: {minPath}")
+  print(f"total: {total} - len(memo): {len(memo)}")
+
+# def getNextPathsToCheck(paths: list[list[Coord]]):
+#   # minScore, nextPaths = inf, set()
+#   # for path in paths:
+#   #   score = pathScore(path)
+#   #   if score == minScore:
+#   #     coords = [DIRPAD_MAP[c] for c in path]
+#   #     nextPaths.update(findPaths(DIRPAD_MAP["A"], coords, "", DIRPAD, minScore))
+#   #   elif score < minScore:
+#   #     minScore = score
+#   #     coords = [DIRPAD_MAP[c] for c in path]
+#   #     nextPaths = set(findPaths(DIRPAD_MAP["A"], coords, "", DIRPAD, minScore))
+#   # return nextPaths
+#   nextPaths = []
+#   for path in paths:
+#     pathCoords = [DIRPAD_MAP[c] for c in path]
+#     nextPaths.extend(findPaths(DIRPAD_MAP["A"], pathCoords, "", DIRPAD))
+#   return nextPaths
+
+# def part2Old(codes: list[str]):
+#   print(memo)
+#   total = 0
+#   for code in codes:
+#     coordsList = [codeToCoord(c) for c in code]
+#     paths = findPaths(codeToCoord("A"), coordsList, "", NUMPAD)
+#     for i in range(2):
+#       print(f"code: {code} i: {i} len(paths): {len(paths)}")
+#       paths = getNextPathsToCheck(paths)
+#     minPath = min(paths, key=len) 
+#     codeScore = len(minPath) * int(code[:3])
+#     print(f"code ({code}) *  len(minPath) ({len(minPath)}) = score ({codeScore})")
+#     total += codeScore
+#   print(f"total: {total}")
 
 ## main
 print(sys.argv)
