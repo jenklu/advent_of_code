@@ -11,7 +11,7 @@ def part1(keys: list[list[int]], locks: list[list[int]]):
   print(f"unique pairs: {count}")
 
 def part2(keys: list[list[int]], locks: list[list[int]]):
-  pass
+  print("Deliver the chronicle to Santa! But really, to yourself :)")
 
 ## main
 print(sys.argv)
