@@ -108,7 +108,7 @@ jbv AND kjg -> vjg
 tvm XOR pkw -> z38
 vwd AND kvv -> mgw
 nmw XOR bgp -> z02
-cdc OR stq -> z21
+cdc OR stq -> nhn
 x16 XOR y16 -> mft
 x37 XOR y37 -> hbr
 x24 XOR y24 -> cns
@@ -148,10 +148,10 @@ x31 XOR y31 -> kbv
 rrj XOR mft -> z16
 hhg AND ccp -> msp
 y00 XOR x00 -> z00
-x25 XOR y25 -> khg
+x25 XOR y25 -> tvb
 x42 AND y42 -> djs
 ggg OR hvg -> csf
-pps XOR wdg -> vdc
+pps XOR wdg -> z12
 y04 XOR x04 -> pvj
 qtg AND knh -> ccd
 x27 AND y27 -> jns
@@ -181,7 +181,7 @@ spq XOR gpk -> z01
 x02 XOR y02 -> bgp
 x20 AND y20 -> fct
 x36 AND y36 -> jbq
-x12 AND y12 -> z12
+x12 AND y12 -> vdc
 mfp XOR spf -> z26
 spg XOR hhm -> z11
 y32 AND x32 -> rjq
@@ -200,13 +200,13 @@ x07 XOR y07 -> gqg
 ptk XOR kmm -> z34
 x28 XOR y28 -> kjg
 dbm OR jft -> qtg
-jbr AND wcs -> z33
+jbr AND wcs -> gst
 y42 XOR x42 -> vbq
 y00 AND x00 -> spq
 y19 XOR x19 -> kfd
 tbn OR grb -> jhd
 kvv XOR vwd -> z44
-wcs XOR jbr -> gst
+wcs XOR jbr -> z33
 srk XOR sjm -> z15
 y39 AND x39 -> cbf
 bgq XOR wdh -> z06
@@ -284,7 +284,7 @@ dfh XOR fpk -> z03
 fbk XOR tcq -> z13
 x09 XOR y09 -> nbm
 pwp OR nmj -> ctw
-y25 AND x25 -> tvb
+y25 AND x25 -> khg
 y34 AND x34 -> krb
 x11 XOR y11 -> hhm
 hdq OR gdm -> fdv
@@ -294,7 +294,7 @@ fvh AND pgc -> hdq
 jkq AND nhn -> vkg
 dwt OR qsg -> sjm
 dbf AND dsb -> pmr
-rsc XOR bbn -> nhn
+rsc XOR bbn -> z21
 y14 AND x14 -> dwt
 x35 AND y35 -> jdk
 x41 XOR y41 -> dfs
