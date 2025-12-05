@@ -128,6 +128,34 @@ fn day_3_1(input: String) -> i64 {
     total_joltage
 }
 
+fn day_3_2_helper(digits: &[i64], num_digits: u32) -> i64 {
+    if num_digits == 0 {
+        return 0;
+    }
+    // + 1 accounts for looking at the _last_ digit -- think about when num_digits = 1
+    let (idx, first_digit) = digits[..(digits.len() + 1 - num_digits as usize)]
+        .iter()
+        .enumerate()
+        // We do this b/c of the semantics `If several elements are equally minimum, the first
+        // element is returned`, whereas max_by_key has the opposite
+        .min_by_key(|x| -x.1)
+        .unwrap();
+    return first_digit * 10i64.pow(num_digits - 1)
+        + day_3_2_helper(&digits[idx + 1..], num_digits - 1);
+}
+
+fn day_3_2(input: String) -> i64 {
+    let mut total_joltage: i64 = 0;
+    for line in input.lines() {
+        let digits: Vec<_> = line
+            .chars()
+            .map(|c| c.to_digit(10).unwrap() as i64)
+            .collect();
+        total_joltage += day_3_2_helper(&digits, 12);
+    }
+    total_joltage
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -163,6 +191,10 @@ fn main() -> io::Result<()> {
         (3, 1) => {
             let res = day_3_1(input);
             println!("Day 3.1 output: {res}");
+        }
+        (3, 2) => {
+            let res = day_3_2(input);
+            println!("Day 3.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
