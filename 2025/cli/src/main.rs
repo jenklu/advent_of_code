@@ -107,6 +107,27 @@ fn day_2_2(input: String) -> i64 {
     }
     count.try_into().unwrap()
 }
+
+fn day_3_1(input: String) -> i64 {
+    let mut total_joltage: i64 = 0;
+    for line in input.lines() {
+        let digits: Vec<_> = line
+            .chars()
+            .map(|c| c.to_digit(10).unwrap() as i64)
+            .collect();
+        let (idx, first_digit) = digits[..(digits.len() - 1)]
+            .iter()
+            .enumerate()
+            // We do this b/c of the semantics `If several elements are equally minimum, the first
+            // element is returned`, whereas max_by_key has the opposite
+            .min_by_key(|x| -x.1)
+            .unwrap();
+        let second_digit = digits[idx + 1..].iter().max().unwrap();
+        total_joltage += first_digit * 10 + second_digit;
+    }
+    total_joltage
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -138,6 +159,10 @@ fn main() -> io::Result<()> {
         (2, 2) => {
             let res = day_2_2(input);
             println!("Day 2.2 output: {res}");
+        }
+        (3, 1) => {
+            let res = day_3_1(input);
+            println!("Day 3.1 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
