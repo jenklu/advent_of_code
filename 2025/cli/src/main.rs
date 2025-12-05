@@ -62,7 +62,7 @@ fn day_2_1(input: String) -> i64 {
         let (start, end) = range.split_once("-").expect("range had more than 1 -");
         let end_val: usize = end.parse().unwrap();
         let mut curr: usize = start.parse().unwrap();
-        while curr < end_val {
+        while curr <= end_val {
             let num_digits = (curr).ilog10() + 1;
             let first_half = curr / 10usize.pow(num_digits / 2);
             let second_half = curr % 10usize.pow(num_digits / 2);
