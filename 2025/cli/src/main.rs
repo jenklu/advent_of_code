@@ -13,7 +13,7 @@ fn day_1_1(input: String) -> i64 {
         } else {
             curr = (curr + inc).rem_euclid(100);
         }
-        println!("rotated {line} to point at {curr}");
+        //println!("rotated {line} to point at {curr}");
         if curr == 0 {
             zero_count += 1;
         }
@@ -38,7 +38,7 @@ fn day_1_2(input: String) -> i64 {
         }
         zero_count += next.abs() / 100;
         curr = (next).rem_euclid(100);
-        println!("rotated {line} to point at {curr} -- zero_count {zero_count}");
+        //println!("rotated {line} to point at {curr} -- zero_count {zero_count}");
     }
     zero_count
 }
@@ -97,7 +97,7 @@ fn day_2_2(input: String) -> i64 {
         let mut curr: usize = start.parse().unwrap();
         while curr <= end_val {
             count += if is_invalid(curr.to_string()) {
-                println!("range: {start}-{end} invalid: {curr}");
+                //println!("range: {start}-{end} invalid: {curr}");
                 curr
             } else {
                 0
