@@ -4,7 +4,7 @@ use std::io::{self};
 
 fn day_1_1(input: String) -> i64 {
     let mut curr: i64 = 50;
-    let mut zeroCount = 0;
+    let mut zero_count = 0;
     for line in input.lines() {
         let inc = line[1..].parse::<i64>().expect("i64 to come after L or R");
         let direction = line.chars().nth(0).expect("all lines to start w/ L or R");
@@ -15,15 +15,15 @@ fn day_1_1(input: String) -> i64 {
         }
         println!("rotated {line} to point at {curr}");
         if curr == 0 {
-            zeroCount += 1;
+            zero_count += 1;
         }
     }
-    zeroCount
+    zero_count
 }
 
 fn day_1_2(input: String) -> i64 {
     let mut curr: i64 = 50;
-    let mut zeroCount = 0;
+    let mut zero_count = 0;
     for line in input.lines() {
         let inc = line[1..].parse::<i64>().expect("i64 to come after L or R");
         let direction = line.chars().nth(0).expect("all lines to start w/ L or R");
@@ -34,13 +34,13 @@ fn day_1_2(input: String) -> i64 {
         };
         // We either will land at 0, or crossed over it going negative -- count 1 extra
         if next <= 0 && curr != 0 {
-            zeroCount += 1
+            zero_count += 1
         }
-        zeroCount += next.abs() / 100;
+        zero_count += next.abs() / 100;
         curr = (next).rem_euclid(100);
-        println!("rotated {line} to point at {curr} -- zeroCount {zeroCount}");
+        println!("rotated {line} to point at {curr} -- zero_count {zero_count}");
     }
-    zeroCount
+    zero_count
 }
 
 // Something like --
@@ -55,61 +55,19 @@ fn day_1_2(input: String) -> i64 {
 //     if curr <  range_end {
 //
 //   }
-// fn day_2_1(input: String) -> i64 {
-//     let ranges = input.split(",");
-//     let mut count = 0;
-//     for range in ranges {
-//         let (start, end) = range.split_once("-").expect("range had more than 1 -");
-//         let end_val: usize = end.parse().unwrap();
-//         let mut curr: usize = start.parse().unwrap();
-//         while curr < end_val {
-//             let curr_str = curr.to_string();
-//             let half_len: u32 = (curr_str.len() / 2).try_into().unwrap();
-//             let first_half = curr / (10usize.pow(half_len));
-//             let next: usize = 10usize.pow(curr_str.len().try_into().unwrap());
-//             println!("curr: {curr}");
-//             if curr_str.len() % 2 == 0 {
-//                 count += if next < end_val {
-//                     println!("adding {}", next / 10 - first_half);
-//                     next / 10 - first_half
-//                 } else {
-//                     let end_first_half = end_val / (10usize.pow(half_len));
-//                     let maybe_last_double = end_first_half * 10usize.pow(half_len) + end_first_half;
-//                     let maybe_add_one = if end_val >= maybe_last_double { 1 } else { 0 };
-//                     println!("adding {}", end_first_half - first_half + maybe_add_one);
-//                     end_first_half - first_half + maybe_add_one
-//                 }
-//             };
-//             curr = next;
-//         }
-//     }
-//     count.try_into().unwrap()
-// }
 fn day_2_1(input: String) -> i64 {
     let ranges = input.split(",");
-    let mut count = 0;
+    let mut count: usize = 0;
     for range in ranges {
         let (start, end) = range.split_once("-").expect("range had more than 1 -");
         let end_val: usize = end.parse().unwrap();
         let mut curr: usize = start.parse().unwrap();
         while curr < end_val {
-            let curr_str: String = curr.to_string();
-            let next: usize = 10usize.pow(curr_str.len().try_into().unwrap());
-            if curr_str.len() % 2 == 1 {
-                curr = next;
-                continue;
-            }
-
-            let half_len: u32 = (curr_str.len() / 2).try_into().unwrap();
-            let first_half = curr / (10usize.pow(half_len));
-            let next_double = first_half * 10usize.pow(half_len) + first_half;
-            if next_double > end_val {
-                break;
-            } else if next_double >= curr {
-                println!("next_double {next_double}");
-                count += next_double;
-            }
-            curr = (first_half + 1) * 10usize.pow(half_len);
+            let num_digits = (curr).ilog10() + 1;
+            let first_half = curr / 10usize.pow(num_digits / 2);
+            let second_half = curr % 10usize.pow(num_digits / 2);
+            count += if first_half == second_half { curr } else { 0 };
+            curr += 1;
         }
     }
     count.try_into().unwrap()
