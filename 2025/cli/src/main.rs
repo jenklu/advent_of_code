@@ -73,8 +73,39 @@ fn day_2_1(input: String) -> i64 {
     count.try_into().unwrap()
 }
 
+fn is_invalid(input: String) -> bool {
+    let sz = input.len();
+    'outer: for i in 1..((sz / 2) + 1) {
+        if sz % i != 0 {
+            continue;
+        };
+        for j in (i..sz).step_by(i) {
+            if input[..i] != input[j..j + i] {
+                continue 'outer;
+            }
+        }
+        return true;
+    }
+    false
+}
 fn day_2_2(input: String) -> i64 {
-    todo!()
+    let ranges = input.split(",");
+    let mut count: usize = 0;
+    for range in ranges {
+        let (start, end) = range.split_once("-").expect("range had more than 1 -");
+        let end_val: usize = end.parse().unwrap();
+        let mut curr: usize = start.parse().unwrap();
+        while curr <= end_val {
+            count += if is_invalid(curr.to_string()) {
+                println!("range: {start}-{end} invalid: {curr}");
+                curr
+            } else {
+                0
+            };
+            curr += 1;
+        }
+    }
+    count.try_into().unwrap()
 }
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -106,7 +137,7 @@ fn main() -> io::Result<()> {
         }
         (2, 2) => {
             let res = day_2_2(input);
-            println!("Day 2.1 output: {res}");
+            println!("Day 2.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
