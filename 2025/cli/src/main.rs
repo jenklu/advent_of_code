@@ -229,6 +229,28 @@ fn day_4_2(input: String) -> i64 {
     }
 }
 
+fn day_5_1(input: String) -> i64 {
+    let mut fresh_count = 0;
+    let mut ranges: Vec<(u64, u64)> = Vec::new();
+    for line in input.lines() {
+        if line == "" {
+            continue;
+        }
+        let bounds: Vec<_> = line.split('-').map(|x| x.parse::<u64>().unwrap()).collect();
+        if bounds.len() > 1 {
+            ranges.push((bounds[0], bounds[1]));
+        } else {
+            for (start, end) in &ranges {
+                if bounds[0] >= *start && bounds[0] <= *end {
+                    fresh_count += 1;
+                    break;
+                }
+            }
+        }
+    }
+    fresh_count
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -276,6 +298,10 @@ fn main() -> io::Result<()> {
         (4, 2) => {
             let res = day_4_2(input);
             println!("Day 4.2 output: {res}");
+        }
+        (5, 1) => {
+            let res = day_5_1(input);
+            println!("Day 5.1 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
