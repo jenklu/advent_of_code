@@ -156,6 +156,79 @@ fn day_3_2(input: String) -> i64 {
     total_joltage
 }
 
+fn char_at<T: AsRef<str>>(rows: &[T], i: isize, j: isize) -> char {
+    rows[i as usize].as_ref().chars().nth(j as usize).unwrap()
+}
+
+fn day_4_1(input: String) -> i64 {
+    let rows: Vec<&str> = input.lines().collect();
+    let mut count = 0;
+    for i in 0..rows.len() as isize {
+        for j in 0..rows[0].len() as isize {
+            if char_at(&rows, i, j) == '.' {
+                continue;
+            }
+            let mut adjacent_count = 0;
+            for delta_i in -1isize..2 {
+                for delta_j in -1isize..2 {
+                    let (check_i, check_j) = (i + delta_i, j + delta_j);
+                    if (delta_i != 0 || delta_j != 0)
+                        && check_i >= 0
+                        && check_i < rows.len() as isize
+                        && check_j >= 0
+                        && check_j < rows[0].len() as isize
+                        && char_at(&rows, check_i, check_j) == '@'
+                    {
+                        adjacent_count += 1;
+                    }
+                }
+            }
+            count += (adjacent_count < 4) as i64;
+        }
+    }
+    count
+}
+
+fn day_4_2(input: String) -> i64 {
+    let mut rows: Vec<String> = input.lines().map(Into::into).collect();
+    let mut total_count = 0;
+    loop {
+        let mut next_rows = Vec::<String>::with_capacity(rows.len());
+        let mut count = 0;
+        for i in 0..rows.len() as isize {
+            next_rows.push(String::with_capacity(rows[0].len()));
+            for j in 0..rows[0].len() as isize {
+                if char_at(&rows, i, j) == '.' {
+                    next_rows[i as usize].push('.');
+                    continue;
+                }
+                let mut adjacent_count = 0;
+                for delta_i in -1isize..2 {
+                    for delta_j in -1isize..2 {
+                        let (check_i, check_j) = (i + delta_i, j + delta_j);
+                        if (delta_i != 0 || delta_j != 0)
+                            && check_i >= 0
+                            && check_i < rows.len() as isize
+                            && check_j >= 0
+                            && check_j < rows[0].len() as isize
+                            && char_at(&rows, check_i, check_j) == '@'
+                        {
+                            adjacent_count += 1;
+                        }
+                    }
+                }
+                count += (adjacent_count < 4) as i64;
+                next_rows[i as usize].push(if adjacent_count < 4 { '.' } else { '@' })
+            }
+        }
+        total_count += count;
+        if count == 0 {
+            return total_count;
+        }
+        rows = next_rows;
+    }
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -195,6 +268,14 @@ fn main() -> io::Result<()> {
         (3, 2) => {
             let res = day_3_2(input);
             println!("Day 3.2 output: {res}");
+        }
+        (4, 1) => {
+            let res = day_4_1(input);
+            println!("Day 4.1 output: {res}");
+        }
+        (4, 2) => {
+            let res = day_4_2(input);
+            println!("Day 4.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
