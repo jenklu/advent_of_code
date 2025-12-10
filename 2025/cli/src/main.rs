@@ -287,6 +287,30 @@ fn day_5_2(input: String) -> i64 {
         .fold(0, |acc, (start, end)| acc + 1 + end - start) as i64
 }
 
+fn day_6_1(input: String) -> i64 {
+    let mut problems: Vec<Vec<_>> = Vec::new();
+    let mut sum = 0;
+    for line in input.lines() {
+        line.split_whitespace()
+            .enumerate()
+            .for_each(|(idx, token)| {
+                let num = token.parse::<i64>();
+                if problems.len() <= idx {
+                    problems.push(vec![num.unwrap()])
+                } else if let Ok(num) = num {
+                    problems[idx].push(num)
+                } else {
+                    sum += if token == "+" {
+                        problems[idx].iter().sum::<i64>()
+                    } else {
+                        problems[idx].iter().product()
+                    }
+                }
+            })
+    }
+    sum
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -342,6 +366,10 @@ fn main() -> io::Result<()> {
         (5, 2) => {
             let res = day_5_2(input);
             println!("Day 5.2 output: {res}");
+        }
+        (6, 1) => {
+            let res = day_6_1(input);
+            println!("Day 6.1 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
