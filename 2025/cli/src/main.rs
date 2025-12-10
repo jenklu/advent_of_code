@@ -311,6 +311,36 @@ fn day_6_1(input: String) -> i64 {
     sum
 }
 
+fn day_6_2(input: String) -> i64 {
+    // This processing is ugly, but []-indexing into Vec<chars> >>> `&str.chars().nth().unwrap()`
+    let lines: Vec<Vec<char>> = input.lines().map(|l| l.chars().collect()).collect();
+    let mut curr_problem = vec![];
+    let mut curr_problem_start = 0usize;
+    let mut sum = 0;
+    for i in 0..lines[0].len() {
+        let mut curr_value = 0;
+        for j in 0..lines.len() - 1 {
+            if let Some(val) = lines[j][i].to_digit(10) {
+                curr_value = curr_value * 10 + val as i64
+            }
+        }
+        if curr_value > 0 {
+            curr_problem.push(curr_value);
+        }
+        // i == lines[0].len() - 1 to include the last problem
+        if curr_value == 0 || i == lines[0].len() - 1 {
+            sum += if lines[lines.len() - 1][curr_problem_start] == '+' {
+                curr_problem.iter().sum::<i64>()
+            } else {
+                curr_problem.iter().product()
+            };
+            curr_problem_start = i + 1;
+            curr_problem = vec![];
+        }
+    }
+    sum
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -370,6 +400,10 @@ fn main() -> io::Result<()> {
         (6, 1) => {
             let res = day_6_1(input);
             println!("Day 6.1 output: {res}");
+        }
+        (6, 2) => {
+            let res = day_6_2(input);
+            println!("Day 6.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
