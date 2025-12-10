@@ -251,6 +251,42 @@ fn day_5_1(input: String) -> i64 {
     fresh_count
 }
 
+fn day_5_2(input: String) -> i64 {
+    let mut ranges: Vec<(u64, u64)> = Vec::new();
+    for line in input.lines() {
+        if line == "" {
+            break;
+        }
+        let bounds: Vec<_> = line.split('-').map(|x| x.parse::<u64>().unwrap()).collect();
+        if bounds.len() > 1 {
+            ranges.push((bounds[0], bounds[1]));
+        }
+    }
+    ranges.sort_unstable_by_key(|(start, _)| *start);
+    let mut i = 0;
+    // Would prob be "faster" and simpler logic to use a separate result array instead of splicing
+    // in here...but I got this working (hey, it's space-efficient!)
+    while i < ranges.len() {
+        let mut splice_in = ranges[i];
+        let mut splice_end = i + 1;
+        while splice_end < ranges.len() && ranges[i].1 >= ranges[splice_end].1 {
+            splice_end += 1;
+        }
+        if splice_end < ranges.len() && ranges[i].1 >= ranges[splice_end].0 {
+            splice_in.1 = ranges[splice_end].1;
+            splice_end += 1;
+        }
+        if splice_end > i + 1 || splice_in != ranges[i] {
+            ranges.splice(i..splice_end, [splice_in]);
+        } else {
+            i += 1;
+        }
+    }
+    ranges
+        .iter()
+        .fold(0, |acc, (start, end)| acc + 1 + end - start) as i64
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -302,6 +338,10 @@ fn main() -> io::Result<()> {
         (5, 1) => {
             let res = day_5_1(input);
             println!("Day 5.1 output: {res}");
+        }
+        (5, 2) => {
+            let res = day_5_2(input);
+            println!("Day 5.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
