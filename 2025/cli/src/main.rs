@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::env;
 use std::fs::read_to_string;
 use std::io::{self};
@@ -341,6 +342,28 @@ fn day_6_2(input: String) -> i64 {
     sum
 }
 
+fn day_7_1_helper(
+    y: usize,
+    x: usize,
+    input: &Vec<Vec<char>>,
+    seen: &mut HashSet<(usize, usize)>,
+) -> i64 {
+    if y >= input.len() || x >= input[0].len() || seen.contains(&(y, x)) {
+        return 0;
+    }
+    seen.insert((y, x));
+    if input[y][x] == '^' {
+        return 1 + day_7_1_helper(y, x + 1, input, seen) + day_7_1_helper(y, x - 1, input, seen);
+    }
+    day_7_1_helper(y + 1, x, input, seen)
+}
+
+fn day_7_1(input: String) -> i64 {
+    let lines: Vec<Vec<char>> = input.lines().map(|x| x.chars().collect()).collect();
+    let mut seen = HashSet::<(usize, usize)>::new();
+    day_7_1_helper(0, input.find('S').unwrap(), &lines, &mut seen)
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -404,6 +427,10 @@ fn main() -> io::Result<()> {
         (6, 2) => {
             let res = day_6_2(input);
             println!("Day 6.2 output: {res}");
+        }
+        (7, 1) => {
+            let res = day_7_1(input);
+            println!("Day 7.1 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
