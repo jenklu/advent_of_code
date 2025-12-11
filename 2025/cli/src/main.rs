@@ -342,26 +342,28 @@ fn day_6_2(input: String) -> i64 {
     sum
 }
 
-fn day_7_1_helper(
-    y: usize,
-    x: usize,
-    input: &Vec<Vec<char>>,
-    seen: &mut HashSet<(usize, usize)>,
-) -> i64 {
-    if y >= input.len() || x >= input[0].len() || seen.contains(&(y, x)) {
-        return 0;
-    }
-    seen.insert((y, x));
-    if input[y][x] == '^' {
-        return 1 + day_7_1_helper(y, x + 1, input, seen) + day_7_1_helper(y, x - 1, input, seen);
-    }
-    day_7_1_helper(y + 1, x, input, seen)
-}
-
 fn day_7_1(input: String) -> i64 {
     let lines: Vec<Vec<char>> = input.lines().map(|x| x.chars().collect()).collect();
-    let mut seen = HashSet::<(usize, usize)>::new();
-    day_7_1_helper(0, input.find('S').unwrap(), &lines, &mut seen)
+    let mut beams = HashSet::from([input.find('S').unwrap()]);
+    let mut count = 0;
+    for line in &lines[1..] {
+        let mut next_beams = HashSet::new();
+        for beam in beams {
+            if line[beam] == '^' {
+                count += 1;
+                if beam + 1 < line.len() {
+                    next_beams.insert(beam + 1);
+                }
+                if beam >= 1 {
+                    next_beams.insert(beam - 1);
+                }
+            } else {
+                next_beams.insert(beam);
+            }
+        }
+        beams = next_beams.clone()
+    }
+    count
 }
 
 fn day_7_2_helper(
