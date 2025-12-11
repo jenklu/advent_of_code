@@ -395,35 +395,35 @@ fn day_7_2(input: String) -> i64 {
     day_7_2_helper(0, input.find('S').unwrap(), &lines, &mut cache) + 1
 }
 
+// Types and trait impls for Day 8
+#[derive(Debug, Copy, Clone)]
+pub struct F64(pub f64);
+
+impl Eq for F64 {}
+
+impl PartialEq for F64 {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.total_cmp(&other.0) == Ordering::Equal
+    }
+}
+
+impl PartialOrd for F64 {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.0.total_cmp(&other.0))
+    }
+}
+
+impl Ord for F64 {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+#[derive(Copy, Clone)]
+struct Coord(i64, i64, i64);
+fn dist(c1: Coord, c2: Coord) -> f64 {
+    (((c1.0 - c2.0).pow(2) + (c1.1 - c2.1).pow(2) + (c1.2 - c2.2).pow(2)) as f64).sqrt()
+}
 fn day_8_1(input: String, is_example: bool) -> i64 {
-    #[derive(Debug, Copy, Clone)]
-    pub struct F64(pub f64);
-
-    impl Eq for F64 {}
-
-    impl PartialEq for F64 {
-        fn eq(&self, other: &Self) -> bool {
-            self.0.total_cmp(&other.0) == Ordering::Equal
-        }
-    }
-
-    impl PartialOrd for F64 {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            Some(self.0.total_cmp(&other.0))
-        }
-    }
-
-    impl Ord for F64 {
-        fn cmp(&self, other: &Self) -> Ordering {
-            self.0.total_cmp(&other.0)
-        }
-    }
-    #[derive(Copy, Clone)]
-    struct Coord(i64, i64, i64);
-    fn dist(c1: Coord, c2: Coord) -> f64 {
-        (((c1.0 - c2.0).pow(2) + (c1.1 - c2.1).pow(2) + (c1.2 - c2.2).pow(2)) as f64).sqrt()
-    }
-
     let points: Vec<_> = input
         .lines()
         .map(|l| {
@@ -478,6 +478,61 @@ fn day_8_1(input: String, is_example: bool) -> i64 {
         res *= groups.swap_remove(idx).len();
     }
     res as i64
+}
+
+fn day_8_2(input: String) -> i64 {
+    let points: Vec<_> = input
+        .lines()
+        .map(|l| {
+            let coords: Vec<_> = l.split(',').map(|s| s.parse::<i64>().unwrap()).collect();
+            Coord(coords[0], coords[1], coords[2])
+        })
+        .collect();
+    let mut distances = BTreeMap::<F64, (usize, usize)>::new();
+    for i in 0..points.len() {
+        for j in (i + 1)..points.len() {
+            let d_float = dist(points[i], points[j]);
+            distances.insert(F64(d_float), (i, j));
+        }
+    }
+    let mut groups: Vec<HashSet<usize>> = Vec::new();
+    for (_, (i, j)) in distances {
+        let (mut existing_i_group, mut existing_j_group) = (None, None);
+        for (idx, group) in groups.iter().enumerate() {
+            if group.contains(&i) {
+                existing_i_group = Some(idx);
+            }
+            if group.contains(&j) {
+                existing_j_group = Some(idx);
+            }
+        }
+        let max_group_sz = match (existing_i_group, existing_j_group) {
+            (Some(i_grp), Some(j_grp)) if i_grp == j_grp => 0,
+            (Some(i_grp), Some(j_grp)) => {
+                let j_grp_set = groups[j_grp].clone();
+                groups[i_grp].extend(j_grp_set);
+                let sz = groups[i_grp].len();
+                groups.swap_remove(j_grp);
+                sz
+            }
+            (Some(i_grp), None) => {
+                groups[i_grp].insert(j);
+                groups[i_grp].len()
+            }
+            (None, Some(j_grp)) => {
+                groups[j_grp].insert(i);
+                groups[j_grp].len()
+            }
+            (None, None) => {
+                groups.push(HashSet::from([i, j]));
+                1
+            }
+        };
+        if max_group_sz == points.len() {
+            return points[i].0 * points[j].0;
+        }
+    }
+    0
 }
 
 fn main() -> io::Result<()> {
@@ -555,6 +610,10 @@ fn main() -> io::Result<()> {
         (8, 1) => {
             let res = day_8_1(input, is_example);
             println!("Day 8.1 output: {res}");
+        }
+        (8, 2) => {
+            let res = day_8_2(input);
+            println!("Day 8.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
