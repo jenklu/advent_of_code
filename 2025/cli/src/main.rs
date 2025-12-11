@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::read_to_string;
 use std::io::{self};
@@ -364,6 +364,34 @@ fn day_7_1(input: String) -> i64 {
     day_7_1_helper(0, input.find('S').unwrap(), &lines, &mut seen)
 }
 
+fn day_7_2_helper(
+    y: usize,
+    x: usize,
+    input: &Vec<Vec<char>>,
+    cache: &mut HashMap<(usize, usize), i64>,
+) -> i64 {
+    if y >= input.len() || x >= input[0].len() {
+        return 0;
+    }
+    if let Some(val) = cache.get(&(x, y)) {
+        return *val;
+    }
+    if input[y][x] == '^' {
+        let right = day_7_2_helper(y, x + 1, input, cache);
+        let left = day_7_2_helper(y, x - 1, input, cache);
+        cache.insert((x + 1, y), right);
+        cache.insert((x - 1, y), left);
+        return left + right + 1;
+    }
+    day_7_2_helper(y + 1, x, input, cache)
+}
+
+fn day_7_2(input: String) -> i64 {
+    let mut cache = HashMap::new();
+    let lines: Vec<Vec<char>> = input.lines().map(|x| x.chars().collect()).collect();
+    day_7_2_helper(0, input.find('S').unwrap(), &lines, &mut cache) + 1
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 || args.len() > 4 {
@@ -431,6 +459,10 @@ fn main() -> io::Result<()> {
         (7, 1) => {
             let res = day_7_1(input);
             println!("Day 7.1 output: {res}");
+        }
+        (7, 2) => {
+            let res = day_7_2(input);
+            println!("Day 7.2 output: {res}");
         }
         (_, _) => {
             todo!("haven't implemented day {day_num} part {part_num}")
